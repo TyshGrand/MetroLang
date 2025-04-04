@@ -1,4 +1,6 @@
 from constants import Constants
+import ai_models
+
 class SessionData:
     
     _instance = None
@@ -28,6 +30,13 @@ class SessionData:
             self.set(Constants.CHAT_HISTORY, [])
 
         self.get(Constants.CHAT_HISTORY).append(chat)
+    
+    def get_model(self):
+        #Default to llama
+        
+    
+        return ai_models.llama_models.llama
+
 
 
 
