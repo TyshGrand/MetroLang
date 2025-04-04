@@ -1,0 +1,6 @@
+id,name,is_active,selling_type
+99999,Pallet,True,['reservations']
+60287,LilyClove,False,"['on-demand', 'reservations']"
+76817,Pewter,True,['on-demand']
+47261,Lilroot,True,"['odv', 'on-demand', 'resevations']"
+82615,Indigo League,True,['odv']
