@@ -17,7 +17,7 @@ from langgraph.prebuilt import create_react_agent
 from langchain.chains import create_sql_query_chain
 from flask import Flask, request, jsonify
 import requests
-import gemini_models
+import ai_models.gemini_models as gemini_models
 import time
 
 
@@ -141,6 +141,7 @@ def main():
 
     # # # Stop the Flask process (optional)
     # flask_process.terminate()
+    pass
 
 if __name__ == "__main__":
     main()

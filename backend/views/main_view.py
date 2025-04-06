@@ -1,23 +1,6 @@
-import sys
-import os
-from dotenv import load_dotenv
-import scripts.prompts as prompt
 import streamlit as st
-import google.generativeai as genai
-
-
-load_dotenv()
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
-
-genai.configure(api_key=GOOGLE_API_KEY)
-
-model_prompt  = prompt.SQL_PREFIX + prompt.SCHEMA_PROMPT
-
-def get_gemini_response(question):
-    model=genai.GenerativeModel('gemini-2.0-pro-exp')
-    response=model.generate_content([model_prompt,question])
-    return response.text
+import scripts.prompts as prompt
+import ai_models.gemini_models as gemini_model
 
 st.set_page_config(page_title="MetroLang", page_icon="💬", layout="wide")
 st.sidebar.image("logo.png", use_container_width=True)
@@ -47,7 +30,7 @@ if page == "Home":
     # if submit is clicked
     if submit:
         with st.spinner("Generating response... Please wait ⏳"):  # Loading animation
-            response=get_gemini_response(question)
+            response= gemini_model.get_gemini_response(question)
             print(response)
             st.write(response)
 elif page == "Prompts":
@@ -60,16 +43,3 @@ elif page == "Prompts":
     with st.expander("📚 SCHEMA_PROMPT"):
         st.write(prompt.SCHEMA_PROMPT)
 
-
-def main():
-    # models = genai.list_models()
-    # for model in models:
-    #     print(model.name)
-    pass
-
-
-
-       
-
-if __name__ == "__main__":
-    main()
