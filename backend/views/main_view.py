@@ -5,7 +5,7 @@ import ai_models.gemini_models as gemini_model
 st.set_page_config(page_title="MetroLang", page_icon="💬", layout="wide")
 st.sidebar.image("logo.png", use_container_width=True)
 st.sidebar.title("Navigation")
-page = st.sidebar.radio("Go to", ["Home", "Prompts"])
+page = st.sidebar.radio("Go to", ["Home", "Prompts", "Chat History"])
 
 st.markdown(
     """
@@ -42,4 +42,7 @@ elif page == "Prompts":
     
     with st.expander("📚 SCHEMA_PROMPT"):
         st.write(prompt.SCHEMA_PROMPT)
+
+elif page == "Chat History":
+    st.title(st.ic)
 
