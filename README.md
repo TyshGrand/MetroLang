@@ -1,1 +1,1 @@
-$- streamlit run views/main_view.py
+$- streamlit run backend/views/main_view.py
