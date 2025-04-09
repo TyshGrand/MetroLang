@@ -2,6 +2,11 @@ setup.py
 ai_models/__init__.py
 ai_models/gemini_models.py
 ai_models/llama_models.py
+data/__init__.py
+data_models/__init__.py
+data_models/chat.py
+data_models/session.py
+data_models/user.py
 metrolang.egg-info/PKG-INFO
 metrolang.egg-info/SOURCES.txt
 metrolang.egg-info/dependency_links.txt
@@ -10,5 +15,4 @@ metrolang.egg-info/top_level.txt
 scripts/__init__.py
 scripts/llm.py
 scripts/prompts.py
-views/__init__.py
 views/main_view.py

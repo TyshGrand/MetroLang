@@ -4,7 +4,7 @@ from langchain_core.prompts import SystemMessagePromptTemplate, HumanMessageProm
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import SystemMessage
 import itertools
-from session import SessionData
+from backend.data.data_models.session import SessionData
 from constants import Constants
 import util
 import sys
