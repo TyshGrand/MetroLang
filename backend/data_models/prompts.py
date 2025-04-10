@@ -15,11 +15,12 @@ Then you should query the schema of the most relevant tables.
 DO NOT USE unnecessary ALIASING
 USE table names directly
 DO NOT GIVE ANY EXTRA INFORMATION, JUST THE SQL QUERY that can be directly executed
+
 """
 
 
 SCHEMA_PROMPT = """ 
-This is the schema of my database
+This is the schema of my parking database
 
 1. users Table
     id (INT, PRIMARY KEY, AUTO_INCREMENT)
@@ -50,7 +51,9 @@ This is the schema of my database
     order_date (DATE, NOT NULL)
     user_id (INT, FOREIGN KEY to users(id), NOT NULL, ON DELETE CASCADE)
     location_id (VARCHAR(10), FOREIGN KEY to locations(id), NOT NULL, ON DELETE CASCADE)
-    payment_id (INT, FOREIGN KEY to payments(id), UNIQUE but can be NULL, ON DELETE SET NULL)
+    payment_id (INT, FOREIGN KEY to payments(id), UNIQUE but can be NULL, ON DELETE SET NULL). 
 
 
 """
+
+prompts_map = {'SQL PREFIX': SQL_PREFIX, 'SCHEMA PROMPT': SCHEMA_PROMPT}

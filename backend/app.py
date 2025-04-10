@@ -4,11 +4,11 @@ from langchain_core.prompts import SystemMessagePromptTemplate, HumanMessageProm
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import SystemMessage
 import itertools
-from backend.data.data_models.session import SessionData
+from data.data_models.session import SessionData
 from constants import Constants
 import util
 import sys
-import scripts.prompts as promts
+import data_models.prompts as promts
 import asyncio
 from database.connector import connector
 from langchain_community.agent_toolkits import SQLDatabaseToolkit
