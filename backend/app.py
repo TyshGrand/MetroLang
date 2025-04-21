@@ -1,149 +1,205 @@
-from langchain_ollama import ChatOllama
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.prompts import SystemMessagePromptTemplate, HumanMessagePromptTemplate, AIMessagePromptTemplate
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.messages import SystemMessage
-import itertools
-from data.data_models.session import SessionData
-from constants import Constants
-import util
-import sys
-import data_models.prompts as promts
-import asyncio
-from database.connector import connector
-from langchain_community.agent_toolkits import SQLDatabaseToolkit
-from langchain_core.messages import HumanMessage
-from langgraph.prebuilt import create_react_agent
-from langchain.chains import create_sql_query_chain
-from flask import Flask, request, jsonify
-import requests
-import ai_models.gemini_models as gemini_models
-import time
+import streamlit as st
+from   ai_models.ai_models_enum import AiModels as ai_models
+import data_models.prompts as prompt
+import ai_models.gemini_models as gemini_model
+import data_models.user as user
+
+def add_new_prompt():
+    if st.session_state.new_prompt_key and st.session_state.new_prompt_value:
+        st.session_state.prompts[st.session_state.new_prompt_key] = st.session_state.new_prompt_value
+        st.session_state.new_prompt_key = ""
+        st.session_state.new_prompt_value = ""
+        # st.rerun() # Force a re-render to update the UI
+
+def app_bar():
+    col1, col2, col3 = st.columns([3, 2, 2])  # Adjust ratios as needed
+
+    with col1:
+        st.header("MetroLang: Your SQL AI Assistant")
+
+    with col2:
+        option1 = st.selectbox("Select User", ["admin", "guest"], key="role_select", on_change=on_role_change, )
+
+    with col3:
+        option2 = st.selectbox("Select Model", list(ai_models), key="model_select", on_change=on_model_change)
 
 
-session = SessionData()
-system_message = SystemMessagePromptTemplate.from_template("You are a helpful AI Assistant. You work as teacher for 5th grade students. You explain things in short and brief. Less than 50 words")
+def on_role_change():
+    st.session_state.selected_role = st.session_state.role_select
+    st.write(f"Roles changed to: {st.session_state.selected_role}")
 
-model = ChatOllama(model='llama3.2:3b', base_url='http://localhost:11434')
-db =  connector()
+def on_model_change():
+    st.session_state.selected_model = st.session_state.model_select
+    st.write(f"Model changed to: {st.session_state.selected_model}")
 
-app = Flask(__name__)
+def add_chat_history(quest_ans: str):
+    pass
+     # Initialize an empty list for chat history
+    
+def give_feedback(index, feedback_type):
+    st.session_state.chat_history[index]['feedback'] = feedback_type
+    if feedback_type == "negative":
+        st.session_state[f'feedback_reason_{index}'] = "" # Initialize reason input
 
-@app.route("/generate", methods=["POST"])
-def generate_response():
-    data = request.json
-    question = data.get("question")
-
-    if not question:
-        return jsonify({"error": "Question is required"}), 400
-
-    response_text = gemini_models.get_gemini_response(question)
-    return jsonify({"response": response_text})
-
-def test_api():
-    """ Function to test the API by making a request to itself """
-    url = "http://127.0.0.1:5000/generate"
-    data = {"question": "how many users have placed orders in the last month in every location"}
-    time.sleep(2)  # Give Flask some time to start
-
-    try:
-        response = requests.post(url, json=data)
-        print("API Response:", response.json())
-    except Exception as e:
-        print("Error hitting API:", e)
-
-
-def agent():
-    toolkit = SQLDatabaseToolkit(db=db, llm=model)
-    tools = toolkit.get_tools()
-    print(tools)
-
-    system_message = SystemMessage(content= promts.SQL_PREFIX)
-
-
-    agent_executor = create_react_agent(model, tools, state_modifier=system_message, debug=False)
-    question = "How many orders are there?"
-    # question = "How many departments are there?"
-
-    agent_executor.invoke({"messages": [HumanMessage(content=question)]})
-
-    for s in agent_executor.stream(
-        {"messages": [HumanMessage(content=question)]}
-    ):
-        print(s)
-        print("----")
-
-def sql_chain():
-    sql_chain = create_sql_query_chain(model, db)
-    sql_chain.get_prompts()[0].pretty_print()
-
-    question = "how many orders are there? You MUST RETURN ONLY MYSQL QUERIES."
-    response = sql_chain.invoke({'question': question}) 
-    print(response)
-
-    from scripts.llm import ask_llm
-    from langchain_core.runnables import chain
-    @chain
-    def get_correct_sql_query(input):
-        context = input['context']
-        question = input['question']
-
-        intruction = """
-            Use above context to fetch the correct SQL query for following question
-            {}
-
-            Do not enclose query in ```sql and do not write preamble and explanation.
-            You MUST return only single SQL query.
-        """.format(question)
-
-        response = ask_llm(context=context, question=intruction)
-
-        return response
-    response = get_correct_sql_query.invoke({'context': response, 'question': question})
-    print(response)
-
-
-@util.async_loader()
-async def generate_response(chat_histroy):
-
-    chat_template = ChatPromptTemplate.from_messages(chat_histroy)
-
-    chain = chat_template|model|StrOutputParser()
-
-    response = chain.invoke({})
-
-    return response
-
-
-def get_history():
-    chat_history = [system_message]
-    for chat in session.get(Constants.CHAT_HISTORY):
-        prompt = HumanMessagePromptTemplate.from_template(chat['user'])
-        chat_history.append(prompt)
-
-        ai_message = AIMessagePromptTemplate.from_template(chat['assistant'])
-        chat_history.append(ai_message)
-
-    return chat_history
+def save_feedback_reason(index):
+    st.session_state.chat_history[index]['feedback_reason'] = st.session_state[f'feedback_reason_{index}']
+    if  st.session_state[f'feedback_query_{index}']:
+        st.session_state.chat_history[index]['feedback_query'] =  st.session_state[f'feedback_query_{index}']
 
 def main():
-    
-    # from multiprocessing import Process
+    st.set_page_config(page_title="MetroLang", page_icon="💬", layout="wide")
+    st.sidebar.image("views/assets/logo.png", use_container_width=True)
+    st.sidebar.title("Navigation")
 
-    # flask_process = Process(target=app.run, kwargs={"host": "0.0.0.0", "port": 5000})
-    # # flask_process.start()
 
-    # # # Wait for server to start
-    # time.sleep(3)  # Ensure Flask starts
 
-    # # # Call the API
-    # test_api()
+    st.markdown(
+        """
+        <style>
+            [data-testid="stSidebar"] {
+                background-color: #5A5A5A !important;
+            }
+        
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+    if "chat_history" not in st.session_state:
+        st.session_state.chat_history = []
 
-    # # # Stop the Flask process (optional)
-    # flask_process.terminate()
-    pass
 
+    if "selected_role" not in st.session_state:
+        st.session_state.selected_role = str(user.Role.ADMIN)
+    if "selected_model" not in st.session_state:
+        st.session_state.selected_model = str(ai_models.GEMINI_PRO)
+
+    page_list: list[str] = ["Home", "Chat History"]
+    if st.session_state.selected_role == "admin":
+        page_list += ["Prompts", "Feedback"]
+    page = st.sidebar.radio("Go to", page_list) 
+
+
+
+    app_bar()
+    # st.write(f"Current Role: {st.session_state.selected_role}")
+    # st.write(f"Current Model: {st.session_state.selected_model}")
+
+    if "prompts" not in st.session_state:
+        st.session_state.prompts = prompt.prompts_map
+
+    st.title(page)
+    match page:
+        case "Home":
+            # st.title = page_list[0]
+        # Sidebar with Logo
+
+
+            question=st.text_input("Input: ",key="input")
+
+            submit=st.button("Ask the question")
+
+            # if submit is clicked
+            if submit:
+                with st.spinner("Generating response... Please wait ⏳"):  # Loading animation
+                    print(st.session_state.prompts)
+                    response= gemini_model.get_gemini_response(question,prompt= str(st.session_state.prompts))
+                    print(response)
+                    st.write(response)
+                    st.session_state.chat_history.append({"user": question, "assistant": response})
+
+
+
+        case "Prompts" :
+            if st.session_state.selected_role == str(user.Role.ADMIN):
+
+                # # st.title("Prompts")
+
+                # # Expandable sections for each text input
+                # with st.expander("📖 SQL PROMT"):
+                #     st.write(prompt.SQL_PREFIX)
+
+                # with st.expander("📚 SCHEMA_PROMPT"):
+                #     st.write(prompt.SCHEMA_PROMPT)
+                st.subheader("Current Prompts")
+                for key, value in st.session_state.prompts.items():
+                    with st.expander(f"📖 {key}"):
+                        st.write(value)
+                
+                # pdb.set_trace()  # Execution will pause here in the terminal
+            
+
+                st.subheader("Add a New Prompt")
+                col_new_prompt_key, col_new_prompt_value = st.columns([2, 3])
+                with col_new_prompt_key:
+                    st.text_input("Prompt Name:", key="new_prompt_key")
+                    st.button("+ Add Prompt", on_click=add_new_prompt)
+                with col_new_prompt_value:
+                    st.text_area("Prompt Value:", height=100, key="new_prompt_value")
+                   
+
+        case "Chat History":
+            st.subheader("Chat History")
+            if st.session_state.chat_history:
+                for index, chat in enumerate(st.session_state.chat_history):
+                    st.markdown(f"**👤  :** {chat['user']}")
+                    st.markdown(chat['assistant'])
+                    st.markdown("---")
+                    cols = st.columns(2)
+                    with cols[0]:
+                        if st.button("👍", key=f"thumb_up_{index}", on_click=give_feedback, args=(index, "positive")):
+                            pass # Button doesn't need to display anything after click
+                    with cols[1]:
+                        if st.button("👎", key=f"thumb_down_{index}", on_click=give_feedback, args=(index, "negative")):
+                            pass # Button doesn't need to display anything after click
+
+                    if chat.get('feedback') == 'negative':
+
+                        with st.expander("What went wrong?"):
+                                st.text_area("Please provide details:", key=f"feedback_reason_{index}")
+                        with st.expander("Correct SQL(optional)"):
+                                st.text_area("", key=f"feedback_query_{index}")
+                        if st.button("Submit Feedback", key=f"submit_feedback_{index}", on_click=save_feedback_reason, args=(index,)):
+                                pass # Feedback submitted on next rerun
+                        
+                    elif chat.get('feedback'):
+                        st.write(f"Feedback: {chat['feedback']}")
+
+                    st.markdown("---")
+
+            else:
+                st.info("No chat history available yet.")
+            pass
+        case "Feedback":
+            positive_chats, negative_chats = [], []
+            for chat in st.session_state.chat_history:
+                if chat.get('feedback') == 'positive':
+                    positive_chats.append(chat)
+                elif chat.get('feedback') == 'negative':
+                    negative_chats.append(chat)
+
+            tab1, tab2 = st.tabs(["Positive Feedback", "Negative Feedback"])
+
+            with tab1:
+                if positive_chats:
+                    for chat in positive_chats:
+                        st.markdown(f"**User:** {chat['user']}")
+                        st.markdown(chat['assistant'])
+                        st.write(f"Feedback: {chat['feedback']}")
+                        st.markdown("---")
+                else:
+                    st.info("No chats have received positive feedback yet.")
+
+            with tab2:
+                if negative_chats:
+                    for index, chat in enumerate(negative_chats): # You're using index here
+                        with st.expander(f"Negative Feedback {index}"):
+                            st.markdown(f"**User:** {chat['user']}")
+                            st.write("Response")
+                            st.markdown(chat['assistant'])
+                            st.write(f"Feedback: {chat['feedback']}")
+                            if chat.get('feedback_reason'):
+                                st.write(f"Reason: {chat['feedback_reason']}")
+                else:
+                    st.info("No chats have received negative feedback yet.")
 if __name__ == "__main__":
     main()
-       
-
