@@ -2,7 +2,9 @@ import streamlit as st
 from   ai_models.ai_models_enum import AiModels as ai_models
 import data_models.prompts as prompt
 import ai_models.gemini_models as gemini_model
+import ai_models.summarization2 as sumarization
 import data_models.user as user
+import pdb
 
 def add_new_prompt():
     if st.session_state.new_prompt_key and st.session_state.new_prompt_value:
@@ -45,6 +47,11 @@ def save_feedback_reason(index):
     st.session_state.chat_history[index]['feedback_reason'] = st.session_state[f'feedback_reason_{index}']
     if  st.session_state[f'feedback_query_{index}']:
         st.session_state.chat_history[index]['feedback_query'] =  st.session_state[f'feedback_query_{index}']
+
+def insert_feedbacks(feedbacks :list):
+    for feedback in feedbacks:
+        st.session_state.chat_history.append({"user": "Sample", "assistant": feedback})
+
 
 def main():
     st.set_page_config(page_title="MetroLang", page_icon="💬", layout="wide")
@@ -177,7 +184,7 @@ def main():
                 elif chat.get('feedback') == 'negative':
                     negative_chats.append(chat)
 
-            tab1, tab2 = st.tabs(["Positive Feedback", "Negative Feedback"])
+            tab1, tab2 , tab3 = st.tabs(["Positive Feedback", "Negative Feedback", "Summarized Feedbacks"])
 
             with tab1:
                 if positive_chats:
@@ -190,6 +197,7 @@ def main():
                     st.info("No chats have received positive feedback yet.")
 
             with tab2:
+                st.button("Import Feedbacks", key='import_feedbacks', on_click=insert_feedbacks, args=(sumarization.feedback_list))
                 if negative_chats:
                     for index, chat in enumerate(negative_chats): # You're using index here
                         with st.expander(f"Negative Feedback {index}"):
@@ -201,5 +209,7 @@ def main():
                                 st.write(f"Reason: {chat['feedback_reason']}")
                 else:
                     st.info("No chats have received negative feedback yet.")
+            with tab3:
+                pass
 if __name__ == "__main__":
     main()

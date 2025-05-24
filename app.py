@@ -2,6 +2,7 @@ import streamlit as st
 from   ai_models.ai_models_enum import AiModels as ai_models
 import data_models.prompts as prompt
 import ai_models.gemini_models as gemini_model
+import ai_models.summarization2 as sumarization
 import data_models.user as user
 import pdb
 
@@ -47,6 +48,24 @@ def save_feedback_reason(index):
     if  st.session_state[f'feedback_query_{index}']:
         st.session_state.chat_history[index]['feedback_query'] =  st.session_state[f'feedback_query_{index}']
 
+def switch_tab(tab_name):
+    st.session_state.active_tab = tab_name
+    st.experimental_rerun()  # force Streamlit to refresh and use the new tab
+
+def insert_feedbacks(feedbacks ):
+    for feedback in feedbacks:
+        st.session_state.chat_history.append({"user": "Sample", "assistant": "Sample", "feedback" : 'negative', 'feedback_reason': feedback})
+
+def summarize_feedbacks():
+    all_neg_feedbacks = [chat.get('feedback_reason') for chat in st.session_state.chat_history if chat.get('feedback') == 'negative']
+    print(all_neg_feedbacks)
+    result = sumarization.process(all_neg_feedbacks)
+
+    st.session_state.summaries =  result
+
+    return st.session_state.summaries
+
+
 def main():
     st.set_page_config(page_title="MetroLang", page_icon="💬", layout="wide")
     st.sidebar.image("views/assets/logo.png", use_container_width=True)
@@ -67,6 +86,11 @@ def main():
     )
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
+
+    tab1 = st.tabs(['V.0.2'])
+
+    if "active_tab" not in st.session_state:
+        st.session_state.active_tab = tab1
 
 
     if "selected_role" not in st.session_state:
@@ -178,7 +202,7 @@ def main():
                 elif chat.get('feedback') == 'negative':
                     negative_chats.append(chat)
 
-            tab1, tab2 = st.tabs(["Positive Feedback", "Negative Feedback"])
+            tab1, tab2 , tab3 = st.tabs(["Positive Feedback", "Negative Feedback", "Summarized Feedbacks"])
 
             with tab1:
                 if positive_chats:
@@ -191,6 +215,7 @@ def main():
                     st.info("No chats have received positive feedback yet.")
 
             with tab2:
+                st.button("Import Feedbacks", key='import_feedbacks', on_click=insert_feedbacks, args=(sumarization.feedback_list,))
                 if negative_chats:
                     for index, chat in enumerate(negative_chats): # You're using index here
                         with st.expander(f"Negative Feedback {index}"):
@@ -202,5 +227,20 @@ def main():
                                 st.write(f"Reason: {chat['feedback_reason']}")
                 else:
                     st.info("No chats have received negative feedback yet.")
+            with tab3:
+                summarize = st.button("Summarize all feedbacks", key='summarize_all_feedbacks')
+                if summarize:
+                    with st.spinner("Summarizing all you feedbacks please wait"):
+                        summarize_feedbacks()
+                if 'summaries' in st.session_state:
+                    for summary, groups in st.session_state.summaries.items():
+                        with st.expander(summary):
+                            for group in groups:
+                                st.write(group)
+                else:
+                    st.info("No Summaries found")
+
+
+
 if __name__ == "__main__":
     main()
