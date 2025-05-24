@@ -8,7 +8,6 @@ from sentence_transformers import SentenceTransformer
 from transformers import pipeline
 from collections import defaultdict
 import hdbscan
-from sklearn.metrics.pairwise import cosine_distances
 
 # Compute cosine distance matrix
 

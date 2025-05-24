@@ -1,14 +1,16 @@
 Metadata-Version: 2.4
 Name: metrolang
-Version: 0.1
-Summary: MetroLang backend service
-Author: Your Name
-Author-email: your@email.com
+Version: 0.2
+Summary: MetroLang Application
+Author: Tushar Gupta
+Author-email: tushargupta9041@gmail.com
 Requires-Dist: flask
 Requires-Dist: requests
 Requires-Dist: streamlit
 Requires-Dist: google-generativeai
 Requires-Dist: python-dotenv
+Requires-Dist: langchain_ollama
+Requires-Dist: langchain
 Dynamic: author
 Dynamic: author-email
 Dynamic: requires-dist
