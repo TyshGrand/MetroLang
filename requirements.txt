@@ -6,8 +6,7 @@ python-dotenv
 langchain_ollama
 langchain
 nltk
-sklearn
+scikit-learn
 hdbscan
-collections
 transformers
 sentence_transformers
