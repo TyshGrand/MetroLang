@@ -1,7 +1,5 @@
 import re
-import nltk
 import string
-import numpy as np
 from nltk.corpus import stopwords
 from sklearn.cluster import KMeans
 from sentence_transformers import SentenceTransformer

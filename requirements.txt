@@ -5,3 +5,9 @@ google-generativeai
 python-dotenv
 langchain_ollama
 langchain
+nltk
+sklearn
+hdbscan
+collections
+transformers
+sentence_transformers
