@@ -1,5 +1,6 @@
 import re
 import string
+import nltk
 from nltk.corpus import stopwords
 from sklearn.cluster import KMeans
 from sentence_transformers import SentenceTransformer
@@ -12,7 +13,7 @@ import hdbscan
 # MCP
 
 # Download NLTK stopwords if not already available
-# nltk.download('stopwords')
+nltk.download('stopwords')
 stop_words = set(stopwords.words('english'))
 
 # Step 1: Sample feedback
