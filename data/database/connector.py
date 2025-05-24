@@ -1,10 +1,8 @@
 import os
-from dotenv import load_dotenv
 from langchain_community.utilities import SQLDatabase
+import streamlit as st
 
-load_dotenv()
-
-DB_URL = os.getenv('DATABASE_URL')
+DB_URL = st.secrets['DATABASE_URL']
 
 class DB_Connector(SQLDatabase):
     _instance = None
