@@ -8,7 +8,7 @@ MetroLang is a Text to SQL application that uses Local(Llama) or Cloud(Gemini) A
 
     1. Model has a base Prompt that describes the following MySQl DataBase
 
-    ![alt text](documentation/mysql_database.png)
+![alt text](documentation/mysql_database.png)
 
     2. User can ask questions and will be returned a SQL query accordingly
 
