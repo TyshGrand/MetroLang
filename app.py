@@ -4,7 +4,9 @@ import data_models.prompts as prompt
 import ai_models.gemini_models as gemini_model
 import ai_models.summarization2 as sumarization
 import data_models.user as user
-import pdb
+import os
+
+os.environ["STREAMLIT_FILE_WATCHER_TYPE"] = "none"
 
 def add_new_prompt():
     if st.session_state.new_prompt_key and st.session_state.new_prompt_value:
