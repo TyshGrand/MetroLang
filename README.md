@@ -5,7 +5,7 @@ MetroLang is a Text to SQL application that uses Local(Llama) or Cloud(Gemini) A
 
 ## Demo
 
-![Demo Video](documentation/demo.webm)
+![Demo Video](https://youtu.be/thdunAuiZo0)
 
 ## Flow
 
