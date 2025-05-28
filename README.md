@@ -1,6 +1,11 @@
 # MetroLang
 
+ <https://metrolang.streamlit.app/>
 MetroLang is a Text to SQL application that uses Local(Llama) or Cloud(Gemini) APIs.
+
+## Demo
+
+![Demo Video](documentation/demo.webm)
 
 ## Flow
 
